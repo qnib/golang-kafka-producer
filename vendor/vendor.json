@@ -1,0 +1,27 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"path": "fmt",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "si35Rts5Vy0qxAokkcjZrno72PU=",
+			"path": "github.com/confluentinc/confluent-kafka-go/kafka",
+			"revision": "3819f9a0e47107712ae9a6aebe31037c9536a2c6",
+			"revisionTime": "2018-04-11T00:07:14Z"
+		},
+		{
+			"checksumSHA1": "A/X+uJcg1shaWCNvvWm7bPxxj1k=",
+			"path": "github.com/qnib/golang-kafka-producer",
+			"revision": "d7ec82859bf89684c0585c5812e0227d38f63301",
+			"revisionTime": "2018-04-29T18:06:42Z"
+		},
+		{
+			"path": "time",
+			"revision": ""
+		}
+	],
+	"rootPath": "github.com/qnib/golang-kafka-producer"
+}
