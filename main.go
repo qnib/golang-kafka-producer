@@ -5,13 +5,46 @@ import (
 	"time"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"os"
+	"strconv"
+)
+
+var (
+	kafkaBroker = "localhost"
+	kafkaTopic = "test"
+	count = 0
+	delayMs = 300
 )
 
 func main() {
-
-	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": os.Getenv("KAFKA_BROKER")})
+	if os.Getenv("KAFKA_BROKER") != "" {
+		kafkaBroker = os.Getenv("KAFKA_BROKER")
+	}
+	if os.Getenv("KAFKA_TOPIC") != "" {
+		kafkaTopic = os.Getenv("KAFKA_TOPIC")
+	}
+	if c, err := strconv.Atoi(os.Getenv("MSG_COUNT")); err == nil {
+		count = c
+	}
+	if d, err := strconv.Atoi(os.Getenv("MSG_DELAY_MS")); err == nil {
+		delayMs = d
+	}
+	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": kafkaBroker})
 	if err != nil {
 		panic(err)
+	}
+	switch {
+	case len(os.Args) == 2:
+		c, err := strconv.Atoi(os.Args[1])
+		if err != nil {
+			fmt.Println("usage: kafka-producer [count]")
+			os.Exit(1)
+		} else {
+			count = c
+		}
+	case len(os.Args) > 2:
+		fmt.Println("usage: kafka-producer [count]")
+		os.Exit(1)
+
 	}
 
 	// Delivery report handler for produced messages
@@ -29,14 +62,23 @@ func main() {
 	}()
 
 	// Produce messages to topic (asynchronously)
-	topic := "test"
+	cnt := 0
+	if count == 0 {
+		fmt.Printf("Start producer without msg limit. Delay between mgs '%dms'\n", delayMs)
+	} else {
+		fmt.Printf("Start producer with msg limit set to %d. Delay between mgs '%dms'\n", count, delayMs)
+	}
 	for {
-		msg := fmt.Sprintf("It is %s", time.Now().String())
+		cnt++
+		msg := fmt.Sprintf("Msg#%d: It is %s", cnt, time.Now().String())
 		p.Produce(&kafka.Message{
-			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+			TopicPartition: kafka.TopicPartition{Topic: &kafkaTopic, Partition: kafka.PartitionAny},
 			Value:          []byte(msg),
 		}, nil)
-		time.Sleep(time.Second)
+		if count != 0 && cnt >= count {
+			break
+		}
+		time.Sleep(time.Duration(delayMs)*time.Millisecond)
 	}
 	// Wait for message deliveries
 	p.Flush(15 * 1000)
