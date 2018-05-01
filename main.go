@@ -141,11 +141,15 @@ func main() {
 		}
 		cnt++
 		msg := fmt.Sprintf("Msg#%d: It is %s", cnt, time.Now().String())
-		p.Produce(&kafka.Message{
+		err := p.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &kafkaTopic, Partition: kafka.PartitionAny},
 			Value:          []byte(msg),
 		}, nil)
-		if cnt >= count {
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+		if count != -1 && cnt >= count {
 			break
 		}
 		time.Sleep(time.Duration(delayMs)*time.Millisecond)
